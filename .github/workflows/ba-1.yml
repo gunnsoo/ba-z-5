@@ -1,0 +1,40 @@
+name: Batch-1
+
+on:
+  schedule:
+    - cron: '*/6 * * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout ba repo
+        uses: actions/checkout@v3
+
+      - name: checkout wa repo
+        uses: actions/checkout@v3
+        with:
+          repository: gunnsoo/wa-sample
+          path: ./wa-sample
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # install the python version needed
+
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+          pip install playwright
+          python -m playwright install
+          pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+      - name: execute py script
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          ID: ${{ secrets.ID }}
+          PW: ${{ secrets.PW }}
+        run: python ./wa-sample/z-1.py
